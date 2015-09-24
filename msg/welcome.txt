@@ -1,0 +1,17 @@
+Hola {{name}}, bienvenido a la ACM USAL!
+
+Se te ha dado de alta en dos grupos, este y ACM-Offtopic.
+
+Este grupo es para cosas importantes, que todos debemos saber.
+Estaría bien que dejaras este grupo con notificaciones.
+
+El otro grupo es para que hables siempre que quieras sobre cualquier
+cosa que se te ocurra, y lo puedes silenciar si te molesta demasiado.
+
+Hay una serie de grupos de temas específicos a los que te puedes unir si quieres:
+{{sig_list}}
+
+Para unirte a cualquiera de ellos mencióname así:
+@AcmSIGBot join NOMBRE
+
+Encantado de tenerte por aquí!

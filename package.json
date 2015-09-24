@@ -1,0 +1,30 @@
+{
+  "name": "acm-sig-bot",
+  "version": "0.1.0",
+  "description": "ACM USAL's Telegram Bot for SIG",
+  "main": "index.js",
+  "scripts": {
+    "test": "make tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ACM-USAL/acm-sig-bot"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "acm",
+    "usal"
+  ],
+  "author": "Emilio Cobos Álvarez",
+  "license": "GPLv2 or Later",
+  "bugs": {
+    "url": "https://github.com/ACM-USAL/acm-sig-bot/issues"
+  },
+  "homepage": "https://github.com/ACM-USAL/acm-sig-bot",
+  "dependencies": {
+    "node-telegram-bot-api": "0.12",
+    "telegram-mt-node": "0.9",
+    "winston": "1.0"
+  }
+}
