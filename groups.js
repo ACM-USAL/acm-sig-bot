@@ -25,7 +25,7 @@ module.exports = {
     },
     {
       title: 'SIGDEV',
-      id: -000,
+      id: -10035878,
       descrition: "Desarrollo de aplicaciones, lenguajes de programación",
     },
     {
@@ -35,7 +35,7 @@ module.exports = {
     },
     {
       title: 'SIGMOBILE',
-      id: -000,
+      id: -9799576,
       description: 'Desarrollo móvil'
     }
   ]
