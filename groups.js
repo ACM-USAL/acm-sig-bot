@@ -26,7 +26,7 @@ module.exports = {
     {
       title: 'SIGDEV',
       id: -10035878,
-      descrition: "Desarrollo de aplicaciones, lenguajes de programación",
+      description: "Desarrollo de aplicaciones, lenguajes de programación",
     },
     {
       title: 'SIGROB',
