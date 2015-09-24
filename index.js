@@ -12,10 +12,10 @@ const promise_error = function () { winston.warning('Noop: ', arguments); };
 
 /// Get the list of groups text
 const getListText = function () {
-  if ( ! GROUPS.length )
+  if ( ! GROUPS.sigs.length )
     return 'No hay ningún grupo';
 
-  return GROUPS.map(function(group) {
+  return GROUPS.sigs.map(function(group) {
     return group.title + ' - ' + (group.description || 'Sin descripción');
   }).join('\n').trim();
 }
@@ -44,7 +44,7 @@ const COMMANDS = {
   },
 
   join: function (msg, group_title) {
-    const group = findBy(GROUPS, 'title', group_title);
+    const group = findBy(GROUPS.sigs, 'title', group_title);
     if ( ! group ) {
       this.sendMessage(msg.chat.id, 'No encuentro el grupo', { reply_to_message_id: msg.message_id }).catch(promise_error);
       return;
