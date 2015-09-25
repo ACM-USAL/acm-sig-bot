@@ -11,19 +11,19 @@ const GROUPS = require('./groups');
 const promise_error = function () { winston.warn('Noop: ', [].slice.call(arguments)); };
 
 /// Get the list of groups text
-const getListText = function () {
+const LIST_TEXT = (function () {
   if ( ! GROUPS.sigs.length )
     return 'No hay ningún grupo';
 
   return GROUPS.sigs.map(function(group) {
     return group.title + ' - ' + (group.description || 'Sin descripción');
   }).join('\n').trim();
-}
+} ());
 
 /// The welcome message to send, with the group info
 const WELCOME_MESSAGE = (function () {
   const template = fs.readFileSync('msg/welcome.txt', { encoding: 'UTF-8' });
-  return template.replace(/\{\{sig_list\}\}/g, getListText());
+  return template.replace(/\{\{sig_list\}\}/g, LIST_TEXT);
 } ());
 
 const findBy = function(ary, key, val) {
@@ -39,8 +39,7 @@ const findBy = function(ary, key, val) {
 /// It's bound to the bot
 const COMMANDS = {
   list: function (msg) {
-    const text = getListText();
-    this.sendMessage(msg.chat.id, text, { reply_to_message_id: msg.message_id }).catch(promise_error);
+    this.sendMessage(msg.chat.id, LIST_TEXT, { reply_to_message_id: msg.message_id }).catch(promise_error);
   },
 
   join: function (msg, group_title) {
