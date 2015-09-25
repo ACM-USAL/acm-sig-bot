@@ -26,6 +26,11 @@ const WELCOME_MESSAGE = (function () {
   return template.replace(/\{\{sig_list\}\}/g, LIST_TEXT);
 } ());
 
+// Help message
+const HELP_MESSAGE = (function () {
+  return 'Este bot permite añadirte a los grupos SIG de ACM.\nLista de comandos:\n-> @AcmSIGBot /list - Lista los grupos\n-> @AcmSIGBot /join NOMBREDELGRUPO - Con esto solicitas unirte al SIG NOMBREDELGRUPO\no:\n-> @AcmSIGBot join NOMBREDELGRUPO\n-> @AcmSIGBot /help: Muestra esta ayuda\n';
+} ());
+
 const findBy = function(ary, key, val) {
   var i = 0;
   for ( ; i < ary.length; ++ i )
@@ -60,6 +65,11 @@ const COMMANDS = {
           this.sendMessage(msg.chat.id, 'Se ha avisado a ' + group_title + ' para que te añadan cuanto antes', { reply_to_message_id: msg.message_id }).catch(promise_error);
         }.bind(this))
         .catch(promise_error);
+  },
+
+  help: function (msg) {
+    this.sendMessage(msg.chat.id, HELP_MESSAGE, { reply_to_message_id: msg.message_id}).catch(promise_error);
+    return;
   }
 }
 
