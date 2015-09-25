@@ -8,7 +8,7 @@ const TOKEN = require('./token');
 const GROUPS = require('./groups');
 
 /// To ignore promise errors
-const promise_error = function () { winston.warn('Noop: ', arguments); };
+const promise_error = function () { winston.warn('Noop: ', [].slice.call(arguments)); };
 
 /// Get the list of groups text
 const getListText = function () {
