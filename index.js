@@ -43,7 +43,7 @@ const COMMANDS = {
   },
 
   join: function (msg, group_title) {
-    const group = findBy(GROUPS.sigs, 'title', group_title);
+    const group = findBy(GROUPS.sigs, 'title', group_title.toUpperCase());
     if ( ! group ) {
       this.sendMessage(msg.chat.id, 'No encuentro el grupo', { reply_to_message_id: msg.message_id }).catch(promise_error);
       return;
