@@ -20,7 +20,7 @@ module.exports = {
     },
     {
       title: 'SIGAI',
-      id: -000, /// TODO
+      id: -15875348,
       description: "Inteligencia artificial"
     },
     {
@@ -30,7 +30,7 @@ module.exports = {
     },
     {
       title: 'SIGROB',
-      id: -000,
+      id: -6125780,
       description: "Robótica"
     },
     {
