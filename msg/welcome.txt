@@ -12,6 +12,9 @@ Hay una serie de grupos de temas específicos a los que te puedes unir si quiere
 {{sig_list}}
 
 Para unirte a cualquiera de ellos mencióname así:
-@AcmSIGBot join NOMBRE
+@AcmSIGBot /join NOMBRE
+
+Si necesitas saber cuales son los grupos, lo puedes hacer con:
+@AcmSIGBOT /list
 
 Encantado de tenerte por aquí!
