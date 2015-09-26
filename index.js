@@ -1,6 +1,6 @@
 const fs = require('fs');
 const winston = require('winston');
-const TelegramBot = require('node-telegram-bot-api');
+var TelegramBot = require('node-telegram-bot-api');
 
 winston.add(winston.transports.File, { filename: 'bot.log' });
 
@@ -38,47 +38,41 @@ const findBy = function(ary, key, val) {
   return null;
 }
 
+/// Little helper to reply to messages
+TelegramBot.prototype.replyTo = function(msg, text) {
+    return this.sendMessage(msg.chat.id, text, { reply_to_message_id: msg.message_id })
+               .catch(promise_error);
+}
+
 /// A command receives the original message and the text after the command
 /// It's bound to the bot
 const COMMANDS = {
   list: function (msg) {
-    this.sendMessage(msg.chat.id, LIST_TEXT, { reply_to_message_id: msg.message_id })
-        .catch(promise_error);
+    this.replyTo(msg, LIST_TEXT);
   },
 
   join: function (msg, group_title) {
     const group = findBy(GROUPS.sigs, 'title', group_title.toUpperCase());
 
-    if ( ! group ) {
-      this.sendMessage(msg.chat.id, 'No encuentro el grupo', { reply_to_message_id: msg.message_id })
-          .catch(promise_error);
-      return;
-    }
+    if ( ! group )
+      return this.replyTo(msg, 'No encuentro el grupo');
 
-    if ( group.id === msg.chat.id ) {
-      this.sendMessage(msg.chat.id, 'No soy tan tonto "-.-', { reply_to_message_id: msg.message_id })
-          .catch(promise_error);
-      return;
-    }
+    if ( group.id === msg.chat.id )
+      return this.replyTo(msg, 'No soy tan tonto "-.-');
 
-    if ( ! msg.from.username ) {
-      this.sendMessage(msg.chat.id, 'Ponte un @nombre de Telegram para poder ser añadido por los miembros del grupo', { reply_to_message_id: msg.message_id })
-          .catch(promise_error);
-      return;
-    }
+    if ( ! msg.from.username )
+      return this.replyTo(msg, 'Ponte un @nombre de Telegram para poder ser añadido por los miembros del grupo');
 
     /// Here we should have or own telegram client using mtproto, but for now... Let's just ping the group
     this.sendMessage(group.id, 'Hey, @' + msg.from.username + ' ha solicitado entrar en el grupo! :)')
         .then(function () {
-          this.sendMessage(msg.chat.id, 'Se ha avisado a ' + group_title + ' para que te añadan cuanto antes', { reply_to_message_id: msg.message_id }).catch(promise_error);
+          this.replyTo(msg, 'Se ha avisado a ' + group_title + ' para que te añadan cuanto antes');
         }.bind(this))
         .catch(promise_error);
   },
 
   help: function (msg) {
-    this.sendMessage(msg.from.id, HELP_MESSAGE)
-        .catch(promise_error);
-    return;
+    this.replyTo(msg, HELP_MESSAGE);
   }
 }
 
@@ -116,8 +110,7 @@ function init(bot_user) {
     if ( COMMANDS.hasOwnProperty(command) && typeof(COMMANDS[command]) === 'function' ) {
       COMMANDS[command].call(this, msg, args.join(' '));
     } else {
-      this.sendMessage(msg.chat.id, 'No se qué hacer :S', { reply_to_message_id: msg.message_id })
-          .catch(promise_error);
+      this.replyTo(msg, 'No se qué hacer :S');
     }
   });
 
@@ -128,7 +121,7 @@ function init(bot_user) {
       return;
 
     if ( msg.chat.id === GROUPS.main_group_id )
-      this.sendMessage(msg.new_chat_participant.id, WELCOME_MESSAGE.replace(/\{\{name\}\}/g, msg.new_chat_participant.first_name))
+      this.sendMessage(msg.chat.id, WELCOME_MESSAGE.replace(/\{\{name\}\}/g, msg.new_chat_participant.first_name))
           .catch(promise_error);
   });
 }
