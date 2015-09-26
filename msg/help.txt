@@ -1,0 +1,6 @@
+Este bot permite añadirte a los grupos SIG de ACM.
+
+Lista de comandos:
+-> @AcmSIGBot /list - Lista los grupos
+-> @AcmSIGBot /join NOMBREDELGRUPO - Con esto solicitas unirte al SIG NOMBREDELGRUPO
+-> @AcmSIGBot /help: Muestra este mensaje

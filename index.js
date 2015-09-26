@@ -26,10 +26,8 @@ const WELCOME_MESSAGE = (function () {
   return template.replace(/\{\{sig_list\}\}/g, LIST_TEXT);
 } ());
 
-// Help message
-const HELP_MESSAGE = (function () {
-  return 'Este bot permite añadirte a los grupos SIG de ACM.\nLista de comandos:\n-> @AcmSIGBot /list - Lista los grupos\n-> @AcmSIGBot /join NOMBREDELGRUPO - Con esto solicitas unirte al SIG NOMBREDELGRUPO\no:\n-> @AcmSIGBot join NOMBREDELGRUPO\n-> @AcmSIGBot /help: Muestra esta ayuda\n';
-} ());
+/// Help message
+const HELP_MESSAGE = fs.readFileSync('msg/help.txt');
 
 const findBy = function(ary, key, val) {
   var i = 0;
@@ -44,18 +42,28 @@ const findBy = function(ary, key, val) {
 /// It's bound to the bot
 const COMMANDS = {
   list: function (msg) {
-    this.sendMessage(msg.chat.id, LIST_TEXT, { reply_to_message_id: msg.message_id }).catch(promise_error);
+    this.sendMessage(msg.chat.id, LIST_TEXT, { reply_to_message_id: msg.message_id })
+        .catch(promise_error);
   },
 
   join: function (msg, group_title) {
     const group = findBy(GROUPS.sigs, 'title', group_title.toUpperCase());
+
     if ( ! group ) {
-      this.sendMessage(msg.chat.id, 'No encuentro el grupo', { reply_to_message_id: msg.message_id }).catch(promise_error);
+      this.sendMessage(msg.chat.id, 'No encuentro el grupo', { reply_to_message_id: msg.message_id })
+          .catch(promise_error);
+      return;
+    }
+
+    if ( group.id === msg.chat.id ) {
+      this.sendMessage(msg.chat.id, 'No soy tan tonto "-.-', { reply_to_message_id: msg.message_id })
+          .catch(promise_error);
       return;
     }
 
     if ( ! msg.from.username ) {
-      this.sendMessage(msg.chat.id, 'Ponte un @nombre de Telegram para poder ser añadido por los miembros del grupo', { reply_to_message_id: msg.message_id }).catch(promise_error);
+      this.sendMessage(msg.chat.id, 'Ponte un @nombre de Telegram para poder ser añadido por los miembros del grupo', { reply_to_message_id: msg.message_id })
+          .catch(promise_error);
       return;
     }
 
@@ -68,7 +76,8 @@ const COMMANDS = {
   },
 
   help: function (msg) {
-    this.sendMessage(msg.chat.id, HELP_MESSAGE, { reply_to_message_id: msg.message_id}).catch(promise_error);
+    this.sendMessage(msg.chat.id, HELP_MESSAGE, { reply_to_message_id: msg.message_id })
+        .catch(promise_error);
     return;
   }
 }
@@ -107,7 +116,8 @@ function init(bot_user) {
     if ( COMMANDS.hasOwnProperty(command) && typeof(COMMANDS[command]) === 'function' ) {
       COMMANDS[command].call(this, msg, args.join(' '));
     } else {
-      this.sendMessage(msg.chat.id, 'No sé qué hacer \u1F615', { reply_to_message_id: msg.message_id }).catch(promise_error);
+      this.sendMessage(msg.chat.id, 'No se qué hacer :S', { reply_to_message_id: msg.message_id })
+          .catch(promise_error);
     }
   });
 
@@ -118,6 +128,7 @@ function init(bot_user) {
       return;
 
     if ( msg.chat.id === GROUPS.main_group_id )
-      this.sendMessage(msg.new_chat_participant.id, WELCOME_MESSAGE.replace(/\{\{name\}\}/g, msg.new_chat_participant.first_name));
+      this.sendMessage(msg.new_chat_participant.id, WELCOME_MESSAGE.replace(/\{\{name\}\}/g, msg.new_chat_participant.first_name))
+          .catch(promise_error);
   });
 }
