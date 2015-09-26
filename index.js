@@ -108,6 +108,6 @@ function init(bot_user) {
       return;
 
     if ( msg.chat.id === GROUPS.main_group_id )
-      this.sendMessage(msg.chat.id, WELCOME_MESSAGE.replace(/\{\{name\}\}/g, msg.new_chat_participant.first_name));
+      this.sendMessage(msg.new_chat_participant.id, WELCOME_MESSAGE.replace(/\{\{name\}\}/g, msg.new_chat_participant.first_name));
   });
 }
