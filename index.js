@@ -76,7 +76,7 @@ const COMMANDS = {
   },
 
   help: function (msg) {
-    this.sendMessage(msg.chat.id, HELP_MESSAGE, { reply_to_message_id: msg.message_id })
+    this.sendMessage(msg.from.id, HELP_MESSAGE)
         .catch(promise_error);
     return;
   }
