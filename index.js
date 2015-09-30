@@ -179,40 +179,62 @@ function init_polling_for_questions(bot, bot_user) {
       response.on('end', function() {
         const $ = cheerio.load(chunks.join(''));
 
-        const questions = $('.questions-list > article');
 
-        if ( questions.length === 0 )
-          return;
+        var newer_question_found = false;
+        var new_questions = [];
+        const previous_last_question_id = last_question_id;
 
-        const last_question = questions.eq(0);
+        $('.questions-list > article').each(function() {
+          const $this = $(this);
+          const id = parseInt($this.attr('id').replace('question-', ''), 10);
 
-        const id = parseInt(last_question.attr('id').replace('question-', ''), 10);
+          /// Don't send a message the first time
+          if ( last_question_id === null ) {
+            last_question_id = id;
+            winston.info('First question registered: ' + id);
+            return false;
+          }
 
-        /// Don't send a message the first time
-        if ( last_question_id === null ) {
-          last_question_id = id;
-          winston.info('First question registered: ' + id);
-          return;
-        }
+          /// Stop looping if we found the last previous question
+          if ( previous_last_question_id === id )
+            return false;
 
-        if ( last_question_id !== id ) {
-          last_question_id = id;
+          /// Now here we're sure the question is new
+
+          /// Update the last_question_id if this is a new question and
+          /// no newer question was found
+          if ( ! newer_question_found ) {
+            newer_question_found = true;
+            last_question_id = id;
+          }
 
           winston.info('New question registered: ' + id);
 
-          const link = last_question.find('.dwqa-title');
+          const link = $this.find('.dwqa-title');
           const question_url = link.attr('href');
           const question_title = link.text();
-          const question_author = last_question.find('.dwqa-author a').text();
+          const question_author = $this.find('.dwqa-author a').text();
 
-          const text = utils.render(NEW_QUESTION_MESSAGE, {
+          new_questions.push({
+            id: id,
             author_name: question_author,
             question_title: question_title,
             question_url: question_url,
           });
+        });
 
-          bot.sendMessage(GROUPS.main_group_id, text).catch(promise_error);
-        }
+        if ( new_questions.length === 0 )
+          winston.info('No new questions this time');
+        else
+          winston.info(new_questions.length + ' new questions');
+
+        /// TODO: Handle more gracefully more than one new question (right
+        /// now we send a bunch of messages sequentially)
+        new_questions.forEach(function(question) {
+          bot.sendMessage(GROUPS.main_group_id,
+                          utils.render(NEW_QUESTION_MESSAGE, question))
+             .catch(promise_error);
+        });
       });
     });
 
