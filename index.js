@@ -1,5 +1,9 @@
 const fs = require('fs');
 const winston = require('winston');
+const http = require('http');
+const cheerio = require('cheerio');
+const utils = require('./utils');
+
 var TelegramBot = require('node-telegram-bot-api');
 
 winston.add(winston.transports.File, { filename: 'bot.log' });
@@ -8,7 +12,7 @@ const TOKEN = require('./token');
 const GROUPS = require('./groups');
 
 /// To ignore promise errors
-const promise_error = function () { winston.warn('Noop: ', [].slice.call(arguments)); };
+const promise_error = function () { winston.warn('Promise error: ', [].slice.call(arguments)); };
 
 /// Get the list of groups text
 const LIST_TEXT = (function () {
@@ -23,20 +27,17 @@ const LIST_TEXT = (function () {
 /// The welcome message to send, with the group info
 const WELCOME_MESSAGE = (function () {
   const template = fs.readFileSync('msg/welcome.txt', { encoding: 'UTF-8' });
-  return template.replace(/\{\{sig_list\}\}/g, LIST_TEXT);
+  return utils.render(template, { sig_list: LIST_TEXT });
 } ());
 
 /// Help message
-const HELP_MESSAGE = fs.readFileSync('msg/help.txt');
+const HELP_MESSAGE = fs.readFileSync('msg/help.txt', { encoding: 'UTF-8' });
 
-const findBy = function(ary, key, val) {
-  var i = 0;
-  for ( ; i < ary.length; ++ i )
-    if ( typeof(ary[i]) === 'object' && ary[i][key] === val )
-      return ary[i];
+/// New question message
+const NEW_QUESTION_MESSAGE = fs.readFileSync('msg/new-question.txt', { encoding: 'UTF-8' });
 
-  return null;
-}
+/// Interval in milliseconds to poll for questions
+const POLL_INTERVAL_MS = 5 * 60 * 1000;
 
 /// Little helper to reply to messages
 TelegramBot.prototype.replyTo = function(msg, text) {
@@ -52,7 +53,7 @@ const COMMANDS = {
   },
 
   join: function (msg, group_title) {
-    const group = findBy(GROUPS.sigs, 'title', group_title.toUpperCase());
+    const group = utils.findBy(GROUPS.sigs, 'title', group_title.toUpperCase());
 
     if ( ! group )
       return this.replyTo(msg, 'No encuentro el grupo');
@@ -82,7 +83,7 @@ bot
   .getMe()
   .then(init)
   .catch(function(err) {
-    winston.error('Token was not correct. Error:', err);
+    winston.error('Token was not correct or other error ocurred, aborting. Error:', err);
     process.exit(1);
   });
 
@@ -109,9 +110,10 @@ function init(bot_user) {
 
     if ( COMMANDS.hasOwnProperty(command) && typeof(COMMANDS[command]) === 'function' ) {
       COMMANDS[command].call(this, msg, args.join(' '));
-    } else {
-      this.replyTo(msg, 'No se qué hacer :S');
+      return;
     }
+
+    this.replyTo(msg, 'No se qué hacer :S');
   });
 
   /// Only welcome people to the main group,
@@ -121,7 +123,101 @@ function init(bot_user) {
       return;
 
     if ( msg.chat.id === GROUPS.main_group_id )
-      this.sendMessage(msg.chat.id, WELCOME_MESSAGE.replace(/\{\{name\}\}/g, msg.new_chat_participant.first_name))
+      this.sendMessage(msg.chat.id, utils.render(WELCOME_MESSAGE, { name: msg.new_chat_participant.first_name }))
           .catch(promise_error);
   });
+
+  init_polling_for_questions(bot, bot_user);
+}
+
+
+function init_polling_for_questions(bot, bot_user) {
+  const URL = 'http://usal.acm.org/preguntas/';
+
+  var last_question_id = null;
+  var poll_timer = null;
+  var poll;
+
+  const repoll = function () {
+    if ( poll_timer )
+      clearTimeout(poll_timer);
+
+    poll_timer = setTimeout(poll, POLL_INTERVAL_MS);
+  };
+
+  winston.info('Start polling to ' + URL);
+  poll = function() {
+    winston.info('HTTP GET request to ' + URL);
+    var request = http.request(URL);
+
+    /// Always schedule a re-poll when the response ends
+    request.on('response', function(response) {
+      response.on('end', repoll);
+    });
+
+    /// Also on error
+    request.on('error', function(err) {
+      winston.error('Request to ' + URL + ' failed: ' + e.message);
+      repoll();
+    });
+
+    request.on('response', function(response) {
+      var chunks = [];
+
+      if ( response.statusCode !== 200 ) {
+        winston.warn('Request to ' + URL + ' returned status ' + response.statusCode);
+        // The end event won't trigger until all data has been consumed
+        response.on('data', function() {});
+        return;
+      }
+
+      response.setEncoding('utf8');
+      response.on('data', function(chunk) {
+        chunks.push(chunk);
+      });
+
+      response.on('end', function() {
+        const $ = cheerio.load(chunks.join(''));
+
+        const questions = $('.questions-list > article');
+
+        if ( questions.length === 0 )
+          return;
+
+        const last_question = questions.eq(0);
+
+        const id = parseInt(last_question.attr('id').replace('question-', ''), 10);
+
+        /// Don't send a message the first time
+        if ( last_question_id === null ) {
+          last_question_id = id;
+          winston.info('First question registered: ' + id);
+          return;
+        }
+
+        if ( last_question_id !== id ) {
+          last_question_id = id;
+
+          winston.info('New question registered: ' + id);
+
+          const link = last_question.find('.dwqa-title');
+          const question_url = link.attr('href');
+          const question_title = link.text();
+          const question_author = last_question.find('.dwqa-author a').text();
+
+          const text = utils.render(NEW_QUESTION_MESSAGE, {
+            author_name: question_author,
+            question_title: question_title,
+            question_url: question_url,
+          });
+
+          bot.sendMessage(GROUPS.main_group_id, text).catch(promise_error);
+        }
+      });
+    });
+
+    request.end();
+  };
+
+  poll();
 }

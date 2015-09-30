@@ -1,0 +1,5 @@
+Ha llegado una pregunta nueva de {{author_name}} a ACM Respuestas:
+- {{question_title}}
+
+Puedes verla y responder a ella en:
+{{question_url}}
