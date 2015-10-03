@@ -94,11 +94,10 @@ function init(bot_user) {
 
     /// If it's not a group and we haven't been @mentioned
     /// skip this
-    if ( msg.chat.title !== undefined ) {
-      if ( msg.text.split(/\s+/).indexOf('@' + bot_user.username) === -1 ) {
-        return;
-      }
-    }
+    if ( msg.chat.title !== undefined &&
+         msg.text.toLowerCase().split(/\s+/).indexOf('@' + bot_user.username.toLowerCase()) === -1 )
+      return;
+
     const index = msg.text.indexOf('/');
 
     if ( index === -1 )
