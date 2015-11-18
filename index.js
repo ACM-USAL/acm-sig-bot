@@ -227,13 +227,12 @@ function init_polling_for_questions(bot, bot_user) {
         else
           winston.info(new_questions.length + ' new questions');
 
-        /// TODO: Handle more gracefully more than one new question (right
-        /// now we send a bunch of messages sequentially)
+	var message = 'Hay ' + new_questions + ' preguntas en ACM Respuestas:\n';
         new_questions.forEach(function(question) {
-          bot.sendMessage(GROUPS.main_group_id,
-                          utils.render(NEW_QUESTION_MESSAGE, question))
-             .catch(promise_error);
+          message += utils.render(NEW_QUESTION_MESSAGE, question);
         });
+
+	bot.sendMessage(GROUPS.main_group_id, message).catch(promise_error);
       });
     });
 
