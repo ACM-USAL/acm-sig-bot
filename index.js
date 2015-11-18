@@ -36,6 +36,8 @@ const HELP_MESSAGE = fs.readFileSync('msg/help.txt', { encoding: 'UTF-8' });
 /// New question message
 const NEW_QUESTION_MESSAGE = fs.readFileSync('msg/new-question.txt', { encoding: 'UTF-8' });
 
+const NEW_QUESTIONS_MESSAGE = fs.readFileSync('msg/new-questions.txt', { encoding: 'UTF-8' });
+
 /// Interval in milliseconds to poll for questions
 const POLL_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -222,17 +224,23 @@ function init_polling_for_questions(bot, bot_user) {
           });
         });
 
-        if ( new_questions.length === 0 )
+        if ( new_questions.length === 0 ) {
           winston.info('No new questions this time');
-        else
+        } else {
           winston.info(new_questions.length + ' new questions');
 
-	var message = 'Hay ' + new_questions + ' preguntas en ACM Respuestas:\n';
-        new_questions.forEach(function(question) {
-          message += utils.render(NEW_QUESTION_MESSAGE, question);
-        });
+          const questions = new_questions.map(function(question) {
+            return utils.render(NEW_QUESTION_MESSAGE, question);
+          });
 
-	bot.sendMessage(GROUPS.main_group_id, message).catch(promise_error);
+          const message = utils.render(NEW_QUESTIONS_MESSAGE, {
+            count: questions.length,
+            questions: questions.join('\n\n'),
+          });
+
+          bot.sendMessage(GROUPS.main_group_id, message)
+             .catch(promise_error);
+        }
       });
     });
 
