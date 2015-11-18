@@ -7,5 +7,5 @@ ssh deployer@178.62.105.89 <<EOF
   npm install
   echo > bot.log
   forever stop index.js
-  forever start index.js
+  forever start -l forever.log -o out.log -e err.log index.js
 EOF
