@@ -1,4 +1,4 @@
-Ha llegado una pregunta nueva de {{author_name}} a ACM Respuestas:
+Pregunta de {{author_name}}:
 - {{question_title}}
 
 Puedes verla y responder a ella en:

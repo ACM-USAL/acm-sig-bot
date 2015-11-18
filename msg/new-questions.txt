@@ -1,0 +1,3 @@
+Hay {{count}} preguntas nuevas en ACM Respuestas:
+
+{{questions}}
