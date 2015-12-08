@@ -66,6 +66,13 @@ const COMMANDS = {
     if ( ! msg.from.username )
       return this.replyTo(msg, 'Ponte un @nombre de Telegram para poder ser añadido por los miembros del grupo');
 
+    const is_known_group = msg.chat.id === GROUPS.main_group_id ||
+                           msg.chat.id === GROUPS.offtopic_group_id ||
+                           GROUPS.sigs.some(function(sig) { return sig.id === msg.chat.id; });
+
+    if (!is_known_group)
+      return this.replyTo(msg, 'Es necesario usar el comando desde uno de los grupos de ACM para que funcione');
+
     /// Here we should have or own telegram client using mtproto, but for now... Let's just ping the group
     this.sendMessage(group.id, 'Hey, @' + msg.from.username + ' ha solicitado entrar en el grupo! :)')
         .then(function () {
