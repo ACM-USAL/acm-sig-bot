@@ -43,7 +43,7 @@ const NEW_QUESTIONS_MESSAGE = fs.readFileSync('msg/new-questions.txt', { encodin
 const POLL_INTERVAL_MS = 5 * 60 * 1000;
 
 /// Expressions to say thanks to the bot
-const THANKS_REG = /\b(gracias|grax|thx|thanks)\b/;
+const THANKS_REG = /\b(gracias|grax|thx|thanks)\b/i;
 
 /// Little helper to reply to messages
 TelegramBot.prototype.replyTo = function(msg, text) {
