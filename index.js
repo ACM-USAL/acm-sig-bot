@@ -3,6 +3,7 @@ const winston = require('winston');
 const http = require('http');
 const cheerio = require('cheerio');
 const utils = require('./utils');
+const emoji = require('node-emoji').emoji;
 
 var TelegramBot = require('node-telegram-bot-api');
 
@@ -41,6 +42,9 @@ const NEW_QUESTIONS_MESSAGE = fs.readFileSync('msg/new-questions.txt', { encodin
 /// Interval in milliseconds to poll for questions
 const POLL_INTERVAL_MS = 5 * 60 * 1000;
 
+/// Expressions to say thanks to the bot
+const THANKS_REG = /\b(gracias|grax|thx|thanks)\b/;
+
 /// Little helper to reply to messages
 TelegramBot.prototype.replyTo = function(msg, text) {
     return this.sendMessage(msg.chat.id, text, { reply_to_message_id: msg.message_id })
@@ -58,10 +62,10 @@ const COMMANDS = {
     const group = utils.findBy(GROUPS.sigs, 'title', group_title.toUpperCase());
 
     if ( ! group )
-      return this.replyTo(msg, 'No encuentro el grupo');
+      return this.replyTo(msg, 'No encuentro el grupo ' + emoji.confused);
 
     if ( group.id === msg.chat.id )
-      return this.replyTo(msg, 'No soy tan tonto "-.-');
+      return this.replyTo(msg, 'No soy tan tonto ' + emoji.wink);
 
     if ( ! msg.from.username )
       return this.replyTo(msg, 'Ponte un @nombre de Telegram para poder ser añadido por los miembros del grupo');
@@ -74,7 +78,7 @@ const COMMANDS = {
       return this.replyTo(msg, 'Es necesario usar el comando desde uno de los grupos de ACM para que funcione');
 
     /// Here we should have or own telegram client using mtproto, but for now... Let's just ping the group
-    this.sendMessage(group.id, 'Hey, @' + msg.from.username + ' ha solicitado entrar en el grupo! :)')
+    this.sendMessage(group.id, 'Hey, @' + msg.from.username + ' ha solicitado entrar en el grupo! ' + emoji.relaxed)
         .then(function () {
           this.replyTo(msg, 'Se ha avisado a ' + group_title + ' para que te añadan cuanto antes');
         }.bind(this))
@@ -109,19 +113,26 @@ function init(bot_user) {
 
     const index = msg.text.indexOf('/');
 
-    if ( index === -1 )
-      return;
+    if ( index !== -1 ) {
+        const full_command = msg.text.substring(index + 1).trim();
+        var args = full_command.split(' ');
+        const command = args.shift().trim();
 
-    const full_command = msg.text.substring(index + 1).trim();
-    var args = full_command.split(' ');
-    const command = args.shift().trim();
+        if ( COMMANDS.hasOwnProperty(command) && typeof(COMMANDS[command]) === 'function' ) {
+          COMMANDS[command].call(this, msg, args.join(' '));
+          return;
+        }
+    }
 
-    if ( COMMANDS.hasOwnProperty(command) && typeof(COMMANDS[command]) === 'function' ) {
-      COMMANDS[command].call(this, msg, args.join(' '));
+    if ( THANKS_REG.test(msg.text) ) {
+      this.replyTo(msg, 'Oinss... ' + emoji.kissing_heart);
       return;
     }
 
-    this.replyTo(msg, 'No se qué hacer :S');
+    this.replyTo(msg, 'No se qué hacer ' + emoji.pensive + '.\n\n'
+                      + 'No obstante, puedes hacer una PR para que lo haga '
+                      + emoji.stuck_out_tongue_winking_eye + ':\n'
+                      + 'https://github.com/ACM-USAL/acm-sig-bot');
   });
 
   /// Only welcome people to the main group,

@@ -24,6 +24,7 @@
   "homepage": "https://github.com/ACM-USAL/acm-sig-bot",
   "dependencies": {
     "node-telegram-bot-api": "0.12",
+    "node-emoji": "1.0",
     "winston": "1.0",
     "cheerio": "0.19"
   }
