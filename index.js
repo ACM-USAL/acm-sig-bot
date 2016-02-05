@@ -176,7 +176,7 @@ function init_polling_for_questions(bot, bot_user) {
 
     /// Also on error
     request.on('error', function(err) {
-      winston.error('Request to ' + URL + ' failed: ' + e.message);
+      winston.error('Request to ' + URL + ' failed: ' + err.message);
       repoll();
     });
 
