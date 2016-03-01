@@ -1,4 +1,16 @@
+const fs = require('fs');
+const winston = require('winston');
+
 module.exports = {
+  DEFAULT_PROMISE_ERROR_HANDLER: function() {
+    winston.warn('Promise error: ', [].slice.call(arguments));
+  },
+
+  loadMessage: function(name) {
+    return fs.readFileSync('msg/' + name + '.txt', { encoding:
+      'UTF-8' });
+  },
+
   findBy: function(ary, key, val) {
     var i = 0;
     for ( ; i < ary.length; ++ i )
