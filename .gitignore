@@ -1,5 +1,5 @@
 # The bot token
-token.js
+config/token.js
 
 # Log
 bot.log

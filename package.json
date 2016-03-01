@@ -2,9 +2,10 @@
   "name": "acm-sig-bot",
   "version": "0.1.0",
   "description": "ACM USAL's Telegram Bot for SIG",
-  "main": "index.js",
+  "main": "src/main.js",
   "scripts": {
-    "test": "make tests"
+    "test": "make tests",
+    "run": "node src/main.js"
   },
   "repository": {
     "type": "git",
