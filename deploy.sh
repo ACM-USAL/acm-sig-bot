@@ -6,6 +6,6 @@ ssh deployer@178.62.105.89 <<EOF
   git reset --hard origin/master
   npm install
   echo > bot.log
-  forever stop index.js
-  forever start -a -l forever.log -o out.log -e err.log index.js
+  forever stop src/main.js
+  forever start -a -l forever.log -o out.log -e err.log src/main.js
 EOF
