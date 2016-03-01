@@ -4,3 +4,4 @@ Lista de comandos:
 -> @AcmSIGBot /list - Lista los grupos
 -> @AcmSIGBot /join NOMBREDELGRUPO - Con esto solicitas unirte al SIG NOMBREDELGRUPO
 -> @AcmSIGBot /help: Muestra este mensaje
+-> @AcmSIGBot /events: Próximos eventos

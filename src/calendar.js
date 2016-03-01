@@ -15,22 +15,64 @@ const TOKEN_PATH = 'config/calendar-token.json';
 const UPCOMING_EVENT_MESSAGE = utils.loadMessage('new-event');
 const UPCOMING_EVENTS_MESSAGE = utils.loadMessage('new-events');
 
+const calendar = google.calendar('v3');
+
 // Yay, this is awful
-var bot = null;
+var auth = null;
 
 // Load client secrets from a local file.
-module.exports = function init(_bot, bot_user) {
-  bot = _bot;
+module.exports = {
+  init: function() {
+    fs.readFile('config/calendar-client-secret.json', function (err, content) {
+      if (err) {
+        winston.log('calendar: Error loading client secret file: ' + err);
+        throw err;
+      }
+      // Authorize a client with the loaded credentials, then call the
+      // Google Calendar API.
+      authorize(JSON.parse(content), function(_auth) {
+        auth = _auth;
+      });
+    });
+  },
 
-  fs.readFile('config/calendar-client-secret.json', function (err, content) {
-    if (err) {
-      winston.log('calendar: Error loading client secret file: ' + err);
-      throw err;
-    }
-    // Authorize a client with the loaded credentials, then call the
-    // Google Calendar API.
-    authorize(JSON.parse(content), realInit);
-  });
+  list_next_events: function(callback) {
+    calendar.events.list({
+      auth: auth,
+      calendarId: 'primary',
+      timeMin: (new Date()).toISOString(),
+      maxResults: 10,
+      singleEvents: true,
+      orderBy: 'startTime'
+    }, function(err, response) {
+      if (err) {
+        winston.error('calendar: The API returned an error: ' + err);
+        return;
+      }
+
+      const events = response.items.map(function(event) {
+        console.log(event);
+        winston.log('calendar: ' + JSON.stringify(event));
+
+        return utils.render(UPCOMING_EVENT_MESSAGE, {
+          start: event.start.dateTime || event.start.date,
+          summary: event.summary || 'Sin título'
+        });
+      });
+
+      if (!events.length) {
+        winston.log('calendar: No events found');
+        return;
+      }
+
+      const message = utils.render(UPCOMING_EVENTS_MESSAGE, {
+        count: events.length,
+        events: events.join('\n'),
+      });
+
+      callback(message);
+    });
+  }
 }
 
 /**
@@ -105,42 +147,6 @@ function storeToken(token) {
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
-function realInit(auth) {
-  const calendar = google.calendar('v3');
-  calendar.events.list({
-    auth: auth,
-    calendarId: 'primary',
-    timeMin: (new Date()).toISOString(),
-    maxResults: 10,
-    singleEvents: true,
-    orderBy: 'startTime'
-  }, function(err, response) {
-    if (err) {
-      winston.error('calendar: The API returned an error: ' + err);
-      return;
-    }
-
-    const events = response.items.map(function(event) {
-      console.log(event);
-      winston.log('calendar: ' + JSON.stringify(event));
-
-      return utils.render(UPCOMING_EVENT_MESSAGE, {
-        start: event.start.dateTime || event.start.date,
-        summary: event.summary || 'Sin título'
-      });
-    });
-
-    if (!events.length) {
-      winston.log('calendar: No events found');
-      return;
-    }
-
-    const message = utils.render(UPCOMING_EVENTS_MESSAGE, {
-      count: events.length,
-      events: events.join('\n\n'),
-    });
-
-    bot.sendMessage(GROUPS.main_group_id, message)
-       .catch(utils.DEFAULT_PROMISE_ERROR_HANDLER);
-  });
+function realInit(_auth) {
+  auth = auth;
 }

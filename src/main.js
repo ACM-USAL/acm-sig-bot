@@ -12,7 +12,7 @@ const GROUPS = require('../config/telegram-groups');
 
 // Other integrations
 const poll_acm_respuestas = require('./poll-acm-respuestas');
-const init_google_calendar = require('./calendar');
+const calendar = require('./calendar');
 
 /// Get the list of groups text
 const LIST_TEXT = (function () {
@@ -82,6 +82,13 @@ const COMMANDS = {
 
   help: function (msg) {
     this.replyTo(msg, HELP_MESSAGE);
+  },
+
+  events: function (msg) {
+    calendar.list_next_events(function(text) {
+      this.replyTo(msg, text)
+          .catch(utils.DEFAULT_PROMISE_ERROR_HANDLER);
+    }.bind(this))
   }
 }
 
@@ -142,5 +149,5 @@ function init(bot_user) {
   });
 
   poll_acm_respuestas(bot, bot_user);
-  init_google_calendar(bot, bot_user);
+  calendar.init();
 }
