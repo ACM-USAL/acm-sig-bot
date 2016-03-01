@@ -2,6 +2,14 @@ const winston = require('winston');
 const http = require('http');
 const cheerio = require('cheerio');
 const utils = require('./utils');
+const GROUPS = require('../config/telegram-groups');
+
+/// New question message
+const NEW_QUESTION_MESSAGE = utils.loadMessage('new-question');
+const NEW_QUESTIONS_MESSAGE = utils.loadMessage('new-questions');
+/// Interval in milliseconds to poll for questions
+const POLL_INTERVAL_MS = 5 * 60 * 1000;
+
 
 module.exports = function(bot, bot_user) {
   const URL = 'http://usal.acm.org/preguntas/';
@@ -110,7 +118,7 @@ module.exports = function(bot, bot_user) {
           });
 
           bot.sendMessage(GROUPS.main_group_id, message)
-             .catch(promise_error);
+             .catch(utils.DEFAULT_PROMISE_ERROR_HANDLER);
         }
       });
     });

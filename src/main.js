@@ -7,12 +7,12 @@ var TelegramBot = require('node-telegram-bot-api');
 
 winston.add(winston.transports.File, { filename: 'bot.log' });
 
-const TOKEN = require('../config/token');
-const GROUPS = require('../config/groups');
-const poll_acm_respuestas = require('./poll-acm-respuestas.js');
+const TOKEN = require('../config/telegram-token');
+const GROUPS = require('../config/telegram-groups');
 
-/// To ignore promise errors
-const promise_error = function () { winston.warn('Promise error: ', [].slice.call(arguments)); };
+// Other integrations
+const poll_acm_respuestas = require('./poll-acm-respuestas');
+const init_google_calendar = require('./calendar');
 
 /// Get the list of groups text
 const LIST_TEXT = (function () {
@@ -30,20 +30,12 @@ const LIST_TEXT = (function () {
 //    node src/main.js
 // The welcome message to send, with the group info
 const WELCOME_MESSAGE = (function () {
-  const template = fs.readFileSync('msg/welcome.txt', { encoding: 'UTF-8' });
+  const template = utils.loadMessage('welcome');
   return utils.render(template, { sig_list: LIST_TEXT });
 } ());
 
 // Help message
-const HELP_MESSAGE = fs.readFileSync('msg/help.txt', { encoding: 'UTF-8' });
-
-/// New question message
-const NEW_QUESTION_MESSAGE = fs.readFileSync('msg/new-question.txt', { encoding: 'UTF-8' });
-
-const NEW_QUESTIONS_MESSAGE = fs.readFileSync('msg/new-questions.txt', { encoding: 'UTF-8' });
-
-/// Interval in milliseconds to poll for questions
-const POLL_INTERVAL_MS = 5 * 60 * 1000;
+const HELP_MESSAGE = utils.loadMessage('help');
 
 /// Expressions to say thanks to the bot
 const THANKS_REG = /\b(gracias|grax|thx|thanks)\b/i;
@@ -51,7 +43,7 @@ const THANKS_REG = /\b(gracias|grax|thx|thanks)\b/i;
 /// Little helper to reply to messages
 TelegramBot.prototype.replyTo = function(msg, text) {
     return this.sendMessage(msg.chat.id, text, { reply_to_message_id: msg.message_id })
-               .catch(promise_error);
+               .catch(utils.DEFAULT_PROMISE_ERROR_HANDLER);
 }
 
 /// A command receives the original message and the text after the command
@@ -85,7 +77,7 @@ const COMMANDS = {
         .then(function () {
           this.replyTo(msg, 'Se ha avisado a ' + group_title + ' para que te añadan cuanto antes');
         }.bind(this))
-        .catch(promise_error);
+        .catch(utils.DEFAULT_PROMISE_ERROR_HANDLER);
   },
 
   help: function (msg) {
@@ -146,10 +138,9 @@ function init(bot_user) {
 
     if ( msg.chat.id === GROUPS.main_group_id )
       this.sendMessage(msg.chat.id, utils.render(WELCOME_MESSAGE, { name: msg.new_chat_participant.first_name }))
-          .catch(promise_error);
+          .catch(utils.DEFAULT_PROMISE_ERROR_HANDLER);
   });
 
   poll_acm_respuestas(bot, bot_user);
+  init_google_calendar(bot, bot_user);
 }
-
-

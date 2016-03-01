@@ -1,0 +1,3 @@
+{{count}} próximos eventos:
+
+ {{events}}

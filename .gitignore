@@ -1,5 +1,9 @@
 # The bot token
-config/token.js
+config/telegram-token.js
+
+# Google calendar API secret
+config/calendar-client-secret.json
+config/calendar-token.json
 
 # Log
 bot.log
