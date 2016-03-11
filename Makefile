@@ -1,3 +1,3 @@
 
 deploy:
-	./deploy.sh
+	cat deploy.sh | ssh acm-sig-bot@emiliocobos.net
