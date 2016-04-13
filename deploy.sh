@@ -1,7 +1,6 @@
 #!/bin/bash
 
-cd /home/acm-sig-bot/acm-sig-bot
-
+cd acm-sig-bot
 git fetch origin
 git reset --hard origin/master
 npm install
