@@ -139,12 +139,12 @@ function init(bot_user) {
 
   /// Only welcome people to the main group,
   /// and only (of course) if the added user isn't the bot
-  bot.on('new_chat_participant', function (msg) {
-    if ( msg.new_chat_participant.id === bot_user.id )
+  bot.on('new_chat_member', function (msg) {
+    if ( msg.new_chat_member.id === bot_user.id )
       return;
 
     if ( msg.chat.id === GROUPS.main_group_id )
-      this.sendMessage(msg.chat.id, utils.render(WELCOME_MESSAGE, { name: msg.new_chat_participant.first_name }))
+      this.sendMessage(msg.chat.id, utils.render(WELCOME_MESSAGE, { name: msg.new_chat_member.first_name }))
           .catch(utils.DEFAULT_PROMISE_ERROR_HANDLER);
   });
 
